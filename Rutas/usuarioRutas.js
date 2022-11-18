@@ -1,7 +1,7 @@
 'use strict'
 
 var express = require('express');
-var UsuarioControl = require('../controlador/usuarioControl');
+var UsuarioControl = require('../Controlador/usuarioControl');
 
 var api = express.Router();
 
