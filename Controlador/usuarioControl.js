@@ -9,7 +9,7 @@ function prueba(req, res) {
     });
 }
 
-function registrarUsuarios(req, res) {
+function registrarUsuario(req, res) {
     var usuarios = new usuariosModelo();
 
     var params = req.body; //recibe todos los datos por POST
@@ -32,5 +32,6 @@ function registrarUsuarios(req, res) {
 }
 
 module.exports = {
-    prueba
+    prueba,
+    registrarUsuario
 };
