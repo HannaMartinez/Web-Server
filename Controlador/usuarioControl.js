@@ -1,7 +1,7 @@
 'use strict'
 
 const bcrypt = require('bcrypt');
-const usuariosModelo = require('../Modelo/Usuarios');
+var usuariosModelo = require('../Modelo/Usuarios');
 var usuario = new usuariosModelo();
 
 var usuariosModelo = require('../Modelo/Usuarios');
@@ -65,7 +65,42 @@ function registrarUsuario(req, res) {
     }
 }
 
+function accesoUsuario(req, res) {
+    var params = req.body;
+    var email = params.email;
+    var password = params.password;
+
+    usuariosModelo.findOne({
+        email: email
+    }, (err, user) => {
+        if (!user) {
+            res.status(404).send({
+                mesagge: 'El usuario no existe'
+            });
+        } else {
+            bcrypt.compare(password, usuario.password, function(err, check) {
+                if (check) {
+                    //devolver los datos del usuario logeado
+                    console.log('coinside el password')
+                    if (params.gethash) {
+                        //devolver un token de jwt
+                    } else {
+                        res.status(200).send({
+                            user: user
+                        });
+                    }
+                } else {
+                    res.status(404).send({
+                        mesagge: 'El usuario no se a identificado'
+                    });
+                }
+            });
+        }
+    });
+}
+
 module.exports = {
     prueba,
-    registrarUsuario
+    registrarUsuario,
+    accesoUsuario
 };
