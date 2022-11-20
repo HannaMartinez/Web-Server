@@ -5,13 +5,10 @@ var Schema = mongoose.Schema;
 
 var EsquemaAlbum = Schema({
     titulo: String,
-    dscripcion: String,
+    descripcion: String,
     year: String,
     imagen: String,
-    Artista: {
-        type: Schema.objectId,
-        ref: "Artista"
-    }
+    Artista: { type: Schema.ObjectId, ref: "Artista" }
 });
 
-module.exports = mongoose.model('Album', EsquemaAlbum)
+module.exports = mongoose.model('Album', EsquemaAlbum);

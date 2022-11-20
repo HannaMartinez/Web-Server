@@ -3,9 +3,9 @@
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
-var EsquemaArtista = Schema({
+var EsquemaArtistas = Schema({
     nombre: String,
-    adescripcion: String,
+    descripcion: String,
     imagen: String
 });
 

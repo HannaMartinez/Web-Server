@@ -1,14 +1,16 @@
 'use strict'
 
-const bcrypt = require('bcrypt');
-var usuariosModelo = require('../Modelo/Usuarios');
-var usuario = new usuariosModelo();
-
-var usuariosModelo = require('../Modelo/Usuarios');
+var bcrypt = require('bcrypt');
+const use = require('../app');
+var usuariosModelo = require('../Modelo/usuarios');
+var usuario = usuariosModelo();
+var jwt = require('../Servicio/jwt')
+var fs = require('fs');
+var path = require('path');
 
 function prueba(req, res) {
     res.status(200).send({
-        mesagge: 'Probando una accion del controlador el usuario del api REST con nede y mongo'
+        mesagge: 'Probando una accion del controlador de usuarios del api REST con node y mongo'
     });
 }
 
@@ -34,15 +36,13 @@ function registrarUsuario(req, res) {
                 usuario.save((err, usuarioAlmacenado) => {
                     if (err) {
                         res.status(500).send({
-                            mesagge: 'Error al guardar el usuario'
+                            mesagge: 'Error al guardar el usurio'
                         });
-
                     } else {
                         if (!usuarioAlmacenado) {
                             res.status(404).send({
-                                mesagge: 'No se ha registado el usuario'
+                                mesagge: 'No se ha registrado el usuario'
                             });
-
                         } else {
                             //nos devuelve un objeto con los datos del usuario guardado
                             res.status(200).send({
@@ -61,7 +61,7 @@ function registrarUsuario(req, res) {
     } else {
         res.status(500).send({
             mesagge: 'Introduce la contraseña'
-        });
+        })
     }
 }
 
@@ -78,12 +78,15 @@ function accesoUsuario(req, res) {
                 mesagge: 'El usuario no existe'
             });
         } else {
-            bcrypt.compare(password, usuario.password, function(err, check) {
+            bcrypt.compare(password, user.password, function(err, check) {
                 if (check) {
                     //devolver los datos del usuario logeado
-                    console.log('coinside el password')
+                    console.log('coincide el password')
                     if (params.gethash) {
                         //devolver un token de jwt
+                        res.status(200).send({
+                            token: jwt.createToken(user)
+                        });
                     } else {
                         res.status(200).send({
                             user: user
@@ -91,7 +94,7 @@ function accesoUsuario(req, res) {
                     }
                 } else {
                     res.status(404).send({
-                        mesagge: 'El usuario no se a identificado'
+                        mesagge: 'El usuario no se ha identificado'
                     });
                 }
             });
@@ -99,8 +102,89 @@ function accesoUsuario(req, res) {
     });
 }
 
+function actualizarUsuario(req, res) {
+    var userId = req.params.id;
+    var update = req.body
+
+    usuariosModelo.findByIdAndUpdate(userId, update, (err, userUpdate) => {
+        if (err) {
+            res.status(500).send({
+                message: 'Error al actualizar el usuario en el servidor'
+            });
+        } else {
+            if (!userUpdate) {
+                res.status(404).send({
+                    message: 'No se ha podido encontar el usuario'
+                });
+            } else {
+                res.status(200).send({
+                    user: userUpdate
+                });
+            }
+        }
+    });
+}
+
+function actualizarFoto(req, res) {
+    var UserId = req.params.id;
+    if (req.files) {
+        var file_path = req.files.image.path;
+        var file_arreglo = file_path.split('\\'); //     cargas\usuario\foto.jpg
+        var file_name = file.arreglo[2];
+        var extension = file_arreglo[2].split('\.');
+        if (extension[1] == 'png' || extension[1] == 'gif' || extension[1] == 'jpg') {
+            usuariosModelo.findByIdAndUpdate(UserId, {
+                imagen: file_arreglo[2]
+            }, (err, user) => {
+                if (err) {
+                    res.status(500).send({
+                        mesagge: 'Error al buscar el usuario'
+                    });
+                }
+                if (!user) {
+                    res.status(404).send({
+                        mesagge: 'Error en el id'
+                    });
+                } else {
+                    res.status(200).send({
+                        image: file_name,
+                        user: user
+                    });
+                }
+            })
+        } else {
+            res.status(404).send({
+                mesagge: 'El formato no es adecuado'
+            });
+        }
+    } else {
+        res.status(404).send({
+            mesagge: 'No cargo el archivo.....'
+        });
+    }
+}
+
+function getFoto(req, res) {
+    var imageFile = req.params.imageFile;
+    var rutaFoto = './cargas/usuario/' + imageFile;
+    console.log(imageFile);
+    fs.exists(rutaFoto, function(existe) {
+        if (existe) {
+            res.sendFile(path.resolve(rutaFoto));
+        } else {
+            res.status(404).send({
+                mesagge: 'No has cargado una imagen con ese nombre'
+            });
+        }
+    })
+
+}
+
 module.exports = {
     prueba,
     registrarUsuario,
-    accesoUsuario
+    accesoUsuario,
+    actualizarUsuario,
+    actualizarFoto,
+    getFoto
 };
